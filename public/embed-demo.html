@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Embed demo - Canopy configurator in an iframe</title>
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; background: #f4f3f0; color: #1b1a18; }
+      header { padding: 16px 24px; background: #fff; border-bottom: 1px solid #e2e0dc; }
+      header h1 { margin: 0; font-size: 16px; }
+      header p { margin: 4px 0 0; font-size: 13px; color: #7a766e; }
+      main { padding: 24px; }
+      iframe { display: block; width: 100%; border: 0; border-radius: 12px; background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+      #log { margin-top: 16px; font: 12px/1.5 ui-monospace, monospace; background: #fff; border: 1px solid #e2e0dc; border-radius: 8px; padding: 12px; max-height: 160px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Host page (simulated third-party site)</h1>
+      <p>The configurator below is loaded in an iframe. Events it posts to this page are logged underneath.</p>
+    </header>
+    <main>
+      <iframe src="/?embed=1" width="100%" height="900" frameborder="0" allowfullscreen title="Canopy configurator"></iframe>
+      <div id="log" aria-live="polite">Waiting for events...</div>
+    </main>
+    <script>
+      const log = document.getElementById('log');
+      window.addEventListener('message', (event) => {
+        if (!event.data || typeof event.data.type !== 'string' || !event.data.type.startsWith('canopy:')) return;
+        if (log.textContent === 'Waiting for events...') log.textContent = '';
+        const line = document.createElement('div');
+        line.textContent = new Date().toLocaleTimeString() + '  ' + JSON.stringify(event.data);
+        log.prepend(line);
+      });
+    </script>
+  </body>
+</html>
