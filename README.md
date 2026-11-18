@@ -184,6 +184,26 @@ Credentials are read only by the Node server and are never bundled into or sent 
 
 ---
 
+## Deployment (Render)
+
+The app is a single Node web service: Express serves the API and the built frontend from one URL. `render.yaml` is a Render Blueprint for it.
+
+1. In the Render dashboard choose **New → Blueprint**, connect this GitHub repository and select the `main` branch.
+2. Render reads `render.yaml` and creates the `canopy-configurator` web service:
+   - build `npm ci --include=dev && npm run build`, start `npm start`
+   - health check `GET /api/health`, Node 22, auto-deploy on every push to `main`
+3. Leave the Shopify variables empty to keep the mock adapter, or fill them in to use a live store.
+4. Open the `https://<service>.onrender.com` URL once the first deploy is live.
+
+Render assigns `PORT`; the server picks it up automatically (`API_PORT`, then `PORT`). Do not deploy to static-only hosting (GitHub Pages, a static Netlify/Vercel site): without the Node server there is no pricing API.
+
+Notes for the free plan:
+- The service sleeps after ~15 minutes without traffic; the first request afterwards takes a few seconds to wake it.
+- The filesystem is ephemeral: saved designs (`server/data/`) and mock carts are lost on each deploy or restart. Attach a persistent disk (paid plans) or swap `FileConfigurationRepository` for a database to keep them.
+- For iframe embedding on your store, set `FRAME_ANCESTORS` to your site's origins instead of `*`.
+
+---
+
 ## iframe embedding
 
 ```html

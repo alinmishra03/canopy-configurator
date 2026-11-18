@@ -1,0 +1,27 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# One Node web service runs the Express API and serves the built frontend.
+# Render injects PORT; the server reads API_PORT, then PORT (server/config/port.ts).
+services:
+  - type: web
+    name: canopy-configurator
+    runtime: node
+    plan: free
+    branch: main
+    autoDeploy: true
+    # devDependencies (vite, esbuild, typescript) are needed to build.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      # Origins allowed to embed the configurator in an iframe ("*" = any site).
+      - key: FRAME_ANCESTORS
+        value: "*"
+      # Optional live Shopify connection; leave unset to use the mock adapter.
+      - key: SHOPIFY_STORE_DOMAIN
+        sync: false
+      - key: SHOPIFY_STOREFRONT_TOKEN
+        sync: false
+      - key: SHOPIFY_VARIANT_MAP
+        sync: false
