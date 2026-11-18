@@ -15,13 +15,31 @@ npm install
 npm run dev          # API on :8787 + Vite on :5173 (proxies /api)
 ```
 
-Open http://localhost:5173.
+Open http://localhost:5173. The terminal should show both lines:
+
+```
+[api] [api] listening on http://localhost:8787 (shopify: mock, prices: mock-2026.11)
+[web] ... ✓ /api proxied to the configurator API at http://localhost:8787
+```
+
+The frontend must be served by Vite (`npm run dev` / `vite preview`) or by the Express server (`npm start`); both route `/api` to the pricing API. Opening `dist/` with a plain static server (Live Server, `npx serve`, etc.) has no API, so pricing cannot work.
+
+### Troubleshooting "Pricing unavailable"
+
+| Message / log | Cause | Fix |
+| --- | --- | --- |
+| `⚠ Pricing will not work: http://localhost:8787 is answering, but it is NOT the canopy configurator API` | Another program is using the API port | Stop it, or set `API_PORT=8790` (any free port) in `.env` and restart `npm run dev` |
+| `[api] Port 8787 is already in use` | Same as above, seen from the API side | Same as above |
+| `The pricing API is not running at http://localhost:8787` | Only the frontend was started (`npm run dev:web` / `npx vite`) | Use `npm run dev`; the page recovers automatically once the API is up |
+| `... returned an HTML page (HTTP 404) instead of JSON` | `/api` is answered by a server that is not the configurator API | Serve the app with `npm run dev` or `npm start` |
+
+`API_PORT` (then `PORT`, then 8787) is read from the shell **and** `.env` by both the API and the Vite proxy (`server/config/port.ts`), so they always agree.
 
 | Script | What it does |
 | --- | --- |
-| `npm run dev` | API (`tsx watch`) and Vite dev server together |
+| `npm run dev` | Checks the API port is free (`predev`), then runs the API (`tsx watch`) and Vite together |
 | `npm run build` | Strict typecheck (client + server) → Vite build → bundled server in `dist-server/` |
-| `npm start` | Production: Express serves the API **and** the built SPA on `PORT` (default 8787) |
+| `npm start` | Production: Express serves the API **and** the built SPA on `API_PORT` / `PORT` (default 8787) |
 | `npm test` | Vitest: pricing engine, rules, serialization, store, API routes |
 | `npm run typecheck` | `tsc --noEmit` for both tsconfigs |
 

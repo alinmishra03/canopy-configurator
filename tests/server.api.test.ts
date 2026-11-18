@@ -95,6 +95,7 @@ describe('API', () => {
 
   it('allows iframe embedding', async () => {
     const res = await request(app).get('/api/health');
+    expect(res.body.service).toBe('canopy-configurator-api');
     expect(res.headers['x-frame-options']).toBeUndefined();
     expect(res.headers['content-security-policy']).toBe('frame-ancestors *');
   });

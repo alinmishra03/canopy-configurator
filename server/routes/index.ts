@@ -8,6 +8,7 @@ import { getProduct } from '@shared/catalog';
 import { calculateQuote, getOptionPrices } from '../services/pricingEngine';
 import { buildCartItem, type ShopifyAdapter } from '../services/shopify';
 import type { VariantMap } from '../config/shopifyVariantMap';
+import { API_SERVICE_NAME } from '../config/port';
 
 export interface ApiDependencies {
   priceBook: PriceBook;
@@ -39,7 +40,12 @@ export function createApiRouter(deps: ApiDependencies): Router {
   const router = Router();
 
   router.get('/health', (_req, res) => {
-    res.json({ status: 'ok', shopifyMode: deps.shopify.mode, priceBookVersion: deps.priceBook.version });
+    res.json({
+      service: API_SERVICE_NAME,
+      status: 'ok',
+      shopifyMode: deps.shopify.mode,
+      priceBookVersion: deps.priceBook.version,
+    });
   });
 
   /** Per-option and per-customization prices for displaying "+$X" on option cards. */

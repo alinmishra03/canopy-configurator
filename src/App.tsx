@@ -19,11 +19,17 @@ import { MobileCheckoutBar } from '@/components/pricing/MobileCheckoutBar';
 
 function useBootstrap() {
   useEffect(() => {
-    fetchOptionPrices(activeProduct.id)
-      .then((prices) => useCommerceStore.getState().setOptionPrices(prices))
-      .catch(() => {
-        /* option cards simply omit prices; the quote shows the error */
-      });
+    const loadOptionPrices = () =>
+      fetchOptionPrices(activeProduct.id)
+        .then((prices) => useCommerceStore.getState().setOptionPrices(prices))
+        .catch(() => {
+          /* option cards omit prices until the API is reachable; the quote shows the error */
+        });
+    void loadOptionPrices();
+    // If the API was unreachable at startup, load option prices once a quote succeeds.
+    const unsubscribePrices = useCommerceStore.subscribe((state, prev) => {
+      if (!state.optionPrices && state.quoteStatus === 'ready' && prev.quoteStatus !== 'ready') void loadOptionPrices();
+    });
     fetchCart().then((cart) => cart && useCommerceStore.getState().setCart(cart));
     postToParent({ type: 'canopy:ready', productId: activeProduct.id });
 
@@ -33,7 +39,10 @@ function useBootstrap() {
       if (!wide.matches && useUiStore.getState().viewMode === 'split') useUiStore.getState().setViewMode('2d');
     };
     wide.addEventListener('change', onChange);
-    return () => wide.removeEventListener('change', onChange);
+    return () => {
+      wide.removeEventListener('change', onChange);
+      unsubscribePrices();
+    };
   }, []);
 }
 
