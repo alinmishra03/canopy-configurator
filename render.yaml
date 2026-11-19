@@ -15,6 +15,10 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 22.11.0
+      # Express production mode. Dev dependencies are still installed for the
+      # build because the build command passes --include=dev.
+      - key: NODE_ENV
+        value: production
       # Origins allowed to embed the configurator in an iframe ("*" = any site).
       - key: FRAME_ANCESTORS
         value: "*"
@@ -25,3 +29,5 @@ services:
         sync: false
       - key: SHOPIFY_VARIANT_MAP
         sync: false
+      - key: SHOPIFY_API_VERSION
+        value: "2024-10"
